@@ -1,0 +1,14 @@
+{
+  "name": "aussies-stats",
+  "version": "1.0.0",
+  "description": "Surf Life Saving Australian Championships — lower-third animation with alpha MOV export",
+  "scripts": {
+    "capture": "node capture.js"
+  },
+  "dependencies": {
+    "@babel/standalone": "^7.29.0",
+    "puppeteer": "^25.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

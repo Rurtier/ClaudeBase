@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Aussies Stats — Export Frame</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1920px; height: 1080px;
+    background: transparent;
+    overflow: hidden;
+  }
+  #root {
+    position: relative;
+    width: 1920px; height: 1080px;
+    overflow: hidden;
+  }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="/vendor/react.development.js"></script>
+  <script src="/vendor/react-dom.development.js"></script>
+  <script src="/vendor/babel.min.js"></script>
+
+  <script type="text/babel">
+// ── Easing ───────────────────────────────────────────────────────────────────
+const Easing = {
+  easeOutCubic: (t) => (--t) * t * t + 1,
+  easeInCubic:  (t) => t * t * t,
+};
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+// ── Timeline context (fixed time for export) ──────────────────────────────────
+const TimelineContext = React.createContext({ time: 0, duration: 3, playing: false });
+const useTime = () => React.useContext(TimelineContext).time;
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+const STATS = [
+  { value: 7000, suffix: '+', label: 'COMPETITORS', format: 'thousands' },
+  { value: 550,  suffix: '+', label: 'EVENTS' },
+  { value: 316,  suffix: '',  label: 'SURF CLUBS' },
+  { value: 6,    suffix: '',  label: 'ARENAS' },
+  { value: 9,    suffix: '',  label: 'ACTION PACKED DAYS' },
+];
+
+function formatNumber(n, mode) {
+  const v = Math.round(n);
+  if (mode === 'thousands') return v.toLocaleString('en-US').replace(/,/g, ' ');
+  return String(v);
+}
+
+// ── StatColumn ────────────────────────────────────────────────────────────────
+function StatColumn({ stat, index, total }) {
+  const t = useTime();
+
+  const entryStart = 0.1 + index * 0.06;
+  const entryEnd   = entryStart + 0.5;
+  const countStart = entryStart;
+  const countEnd   = countStart + 1.4;
+  const exitStart  = 2.7;
+  const exitEnd    = 3.0;
+
+  const entryT = t >= entryStart ? clamp((t - entryStart) / (entryEnd - entryStart), 0, 1) : 0;
+  const eEntry = Easing.easeOutCubic(entryT);
+
+  const countT = t >= countStart ? clamp((t - countStart) / (countEnd - countStart), 0, 1) : 0;
+  const eCount = Easing.easeOutCubic(countT);
+  const currentValue = stat.value * eCount;
+
+  const exitT  = t >= exitStart ? clamp((t - exitStart) / (exitEnd - exitStart), 0, 1) : 0;
+  const eExit  = Easing.easeInCubic(exitT);
+
+  const opacity = eEntry * (1 - eExit);
+  const ty = (1 - eEntry) * 28 + eExit * -8;
+
+  const colWidth = 1920 / total;
+  const colX     = index * colWidth;
+
+  return (
+    <div style={{
+      position: 'absolute', left: colX, top: 0,
+      width: colWidth, height: '100%',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      opacity, transform: `translateY(${ty}px)`,
+      willChange: 'transform, opacity',
+    }}>
+      <div style={{
+        width: 56, height: 2,
+        background: '#ffffff', marginBottom: 28,
+        opacity: 0.7,
+        transform: `scaleX(${eEntry})`,
+        transformOrigin: 'center',
+      }} />
+      <div style={{
+        fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+        fontWeight: 300, fontSize: 108, lineHeight: 1,
+        color: '#ffffff', letterSpacing: '-0.03em',
+        fontVariantNumeric: 'tabular-nums',
+        textShadow: '0 2px 18px rgba(0,0,0,0.35)',
+        display: 'flex', alignItems: 'baseline',
+      }}>
+        <span>{formatNumber(currentValue, stat.format)}</span>
+        <span style={{
+          fontSize: 72, fontWeight: 200, marginLeft: 2,
+          opacity: countT > 0.85 ? 1 : 0,
+        }}>{stat.suffix}</span>
+      </div>
+      <div style={{
+        marginTop: 22,
+        fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+        fontWeight: 500, fontSize: 18, letterSpacing: '0.22em',
+        color: '#ffffff',
+        textShadow: '0 1px 8px rgba(0,0,0,0.4)',
+        textAlign: 'center', whiteSpace: 'nowrap',
+      }}>
+        {stat.label}
+      </div>
+    </div>
+  );
+}
+
+// ── Dividers ──────────────────────────────────────────────────────────────────
+function Dividers({ count }) {
+  const t = useTime();
+  return (
+    <>
+      {Array.from({ length: count - 1 }, (_, i) => {
+        const idx = i + 1;
+        const start = 0.15 + idx * 0.04;
+        const end = start + 0.6;
+        const p = Easing.easeOutCubic(clamp((t - start) / (end - start), 0, 1));
+        const exitT = clamp((t - 2.7) / 0.3, 0, 1);
+        const opacity = p * (1 - Easing.easeInCubic(exitT)) * 0.25;
+        return (
+          <div key={idx} style={{
+            position: 'absolute',
+            left: (1920 / count) * idx,
+            top: '20%', height: `${60 * p}%`,
+            width: 1, background: '#ffffff',
+            opacity, transform: 'translateX(-0.5px)',
+          }} />
+        );
+      })}
+    </>
+  );
+}
+
+// ── LowerThird ────────────────────────────────────────────────────────────────
+function LowerThird() {
+  return (
+    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 80, height: 320 }}>
+      <Dividers count={STATS.length} />
+      {STATS.map((s, i) => (
+        <StatColumn key={s.label} stat={s} index={i} total={STATS.length} />
+      ))}
+    </div>
+  );
+}
+
+// ── App — reads time from URL ?t=, exposes setTime for frame stepping ─────────
+function App() {
+  const [time, setTime] = React.useState(
+    parseFloat(new URLSearchParams(window.location.search).get('t') || '0')
+  );
+
+  React.useEffect(() => {
+    window.__setTime = setTime;
+    window.__ready   = true;
+  }, []);
+
+  const ctx = React.useMemo(() => ({ time, duration: 3, playing: false }), [time]);
+
+  return (
+    <TimelineContext.Provider value={ctx}>
+      <div style={{ position: 'relative', width: 1920, height: 1080, overflow: 'hidden' }}>
+        <LowerThird />
+      </div>
+    </TimelineContext.Provider>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
