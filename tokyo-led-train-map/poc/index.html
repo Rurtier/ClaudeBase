@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tokyo Live Rail Map — POC (+JR)</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Tokyo Live Rail Map <span style="color:#8b93a1;font-weight:400">· proof of concept</span></h1>
+      <div class="sub">+JR scope · source: <span id="source">…</span></div>
+    </div>
+    <div class="controls">
+      <button id="play">⏸ Pause</button>
+      <span class="lbl">speed</span>
+      <button data-speed="1">1×</button>
+      <button data-speed="2" class="active">2×</button>
+      <button data-speed="5">5×</button>
+      <button data-speed="10">10×</button>
+    </div>
+    <div class="clock" id="clock">08:00</div>
+  </header>
+
+  <main>
+    <div class="map-wrap">
+      <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <aside>
+      <h2>Service status</h2>
+      <div class="status ok" id="status"><span class="dot ok"></span> All lines running on time</div>
+      <h2>Lines</h2>
+      <div id="legend"></div>
+      <footer>
+        Trains are estimated from each line's timetable (headway + per-stop time) with
+        simulated delays — no live feed yet. When your <b>ODPT</b> registration is approved,
+        swap <code>TimetableSimulationSource</code> for <code>OdptSource</code> (see README)
+        and the same UI shows real positions. Map geometry is a stylised schematic.
+      </footer>
+    </aside>
+  </main>
+
+  <script src="network.js"></script>
+  <script src="simulation.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
