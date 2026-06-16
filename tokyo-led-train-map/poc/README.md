@@ -26,6 +26,20 @@ Use the header controls to pause/resume and change the clock speed (1×–10× s
 per real second). The side panel shows live per-line service status with simulated
 delays.
 
+## Offline use (PWA)
+
+The app already runs with **no external dependencies and no network calls**, so it works
+offline out of the box. On top of that it's an installable **Progressive Web App**:
+
+- A service worker (`sw.js`) caches the app shell on first load, so it keeps working with
+  no connection — handy for a wall display.
+- A web manifest (`manifest.webmanifest` + `icon.svg`) makes it installable ("Add to Home
+  Screen" / "Install app") and launchable full-screen.
+
+Service workers only run over **http/https**, not `file://`, so to get offline caching and
+install, load it via a server (e.g. `python3 -m http.server`, below) once — after that it
+runs offline. Opening `index.html` directly still works; it just skips the install/cache layer.
+
 ## Files
 
 | File | Role |
@@ -35,6 +49,8 @@ delays.
 | `network.js` | Stations, lines, colours, and schematic coordinates (the only file you edit to change the map) |
 | `simulation.js` | `TimetableSimulationSource` (used now) **and** `OdptSource` (stub for live data) |
 | `app.js` | SVG rendering + animation loop + UI |
+| `manifest.webmanifest` / `icon.svg` | PWA install metadata + icon |
+| `sw.js` | Service worker — offline caching of the app shell |
 
 ## The data-source contract
 

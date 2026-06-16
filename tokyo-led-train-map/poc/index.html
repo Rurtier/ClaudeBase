@@ -4,6 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tokyo Live Rail Map — POC (+JR)</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0c0e12" />
+  <link rel="icon" href="icon.svg" />
+  <link rel="apple-touch-icon" href="icon.svg" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -44,5 +48,13 @@
   <script src="network.js"></script>
   <script src="simulation.js"></script>
   <script src="app.js"></script>
+  <script>
+    // Register the service worker for offline use (only works over http/https, not file://).
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () { /* offline support unavailable */ });
+      });
+    }
+  </script>
 </body>
 </html>
